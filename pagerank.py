@@ -245,3 +245,5 @@ if __name__=='__main__':
     v = g.make_personalization_vector(args.personalization_vector_query)
     pi = g.power_method(v, alpha=args.alpha, max_iterations=args.max_iterations, epsilon=args.epsilon)
     g.search(pi, query=args.search_query, max_results=args.max_results)
+
+    #testing 
