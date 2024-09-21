@@ -15,7 +15,7 @@ import logging
 
 class WebGraph():
 
-    def __init__(self, filename, max_nnz=None, filter_ratio=None):
+    def __init__(self, filenames, max_nnz=None, filter_ratio=None):
         '''
         Initializes the WebGraph from a file.
         The file should be a gzipped csv file.
@@ -30,19 +30,20 @@ class WebGraph():
         target_counts = defaultdict(lambda: 0)
 
         # loop through filename to extract the indices
-        logging.debug('computing indices')
-        with gzip.open(filename,newline='',mode='rt') as f:
-            for i,row in enumerate(csv.DictReader(f)):
-                if max_nnz is not None and i>max_nnz:
-                    break
-                import re
-                regex = re.compile(r'.*((/$)|(/.*/)).*')
-                if regex.match(row['source']) or regex.match(row['target']):
-                    continue
-                source = self._url_to_index(row['source'])
-                target = self._url_to_index(row['target'])
-                target_counts[target] += 1
-                indices.append([source,target])
+        for filename in filenames:
+            logging.debug('computing indices')
+            with gzip.open(filename,newline='',mode='rt') as f:
+                for i,row in enumerate(csv.DictReader(f)):
+                    if max_nnz is not None and i>max_nnz:
+                        break
+                    import re
+                    regex = re.compile(r'.*((/$)|(/.*/)).*')
+                    if regex.match(row['source']) or regex.match(row['target']):
+                        continue
+                    source = self._url_to_index(row['source'])
+                    target = self._url_to_index(row['target'])
+                    target_counts[target] += 1
+                    indices.append([source,target])
 
         # remove urls with too many in-links
         if filter_ratio is not None:
@@ -221,11 +222,10 @@ def url_satisfies_query(url, query):
                 return False
     return satisfies
 
-
 if __name__=='__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data', required=True)
+    parser.add_argument('--data', nargs='+', required=True, help="Paths to gzipped files")
     parser.add_argument('--personalization_vector_query')
     parser.add_argument('--search_query', default='')
     parser.add_argument('--filter_ratio', type=float, default=None)
