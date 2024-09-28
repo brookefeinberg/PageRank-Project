@@ -128,7 +128,8 @@ class WebGraph():
             if v is None:
                 v = torch.Tensor([1/n]*n)
                 v = torch.unsqueeze(v,1)
-            v /= torch.norm(v)
+            v /= torch.norm(v)  
+            v = v.view(n, 1) 
 
             if x0 is None:
                 x0 = torch.Tensor([1/(math.sqrt(n))]*n)
@@ -140,6 +141,8 @@ class WebGraph():
             x = xprev.detach().clone()
             for i in range(max_iterations):
                 xprev = x.detach().clone()
+
+                x = torch.sparse.addmm((1 - alpha) * v, self.P.t(), alpha * xprev)
 
                 # compute the new x vector using Eq (5.1)
                 # FIXME: Task 1
